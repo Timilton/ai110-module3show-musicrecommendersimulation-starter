@@ -23,9 +23,28 @@ Some prompts to answer:
 
 - What features does each `Song` use in your system
   - For example: genre, mood, energy, tempo
+
+  - The feature that each song in my system has energy, tempo_bpm, acousticness, danceability, and genre
+
 - What information does your `UserProfile` store
+    - As for right now, it stores favourite genere, favourite mood, targeted energy, and likes_acoustic
 - How does your `Recommender` compute a score for each song
+
+    - It subtracts using the absolute value all the features songs (tempo_score, energy_score, acoustic_score, dance_score and genere_score) by the user prefrences using the same features then those assigned features are multiplied by weights and all added together to get a recommender
+
+    **Algorithm Recipe (point weights):**
+    - Genre match → **+2.0 pts** — strongest signal; encodes instrument palette and production style
+    - Mood match → **+1.0 pt** — secondary; mood varies too widely within a genre to lead
+    - Tempo proximity → up to **+1.5 pts** — top personal priority (how fast-paced a song feels); BPM is normalized to 0–1 before comparing
+    - Energy proximity → up to **+1.25 pts** — overall intensity; pairs with tempo
+    - Acousticness proximity → up to **+1.0 pt** — organic vs. electronic instrumentation; best feature for "instrumental similarities"
+    - Danceability proximity → up to **+0.75 pts** — beat regularity and rhythmic tightness
+    - **Max possible score: 7.5** — all proximity scores use the formula `(1 - |song_value - target_value|) × weight`
+
 - How do you choose which songs to recommend
+
+    - Songs are all recommended by the features I listed (tempo_score, energy_score, acoustic_score, dance_score and genere_score) and based on the total, it returns the highest total
+    - Every song in the catalog is scored individually, then all scores are sorted in descending order and the top K are returned — this is the **Ranking Rule** (separate from the Scoring Rule above)
 
 You can include a simple diagram or bullet list if helpful.
 
