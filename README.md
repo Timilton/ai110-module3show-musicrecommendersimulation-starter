@@ -27,6 +27,10 @@ An OOP wrapper (`Recommender` class) exposes the same logic for the automated te
 
 Full component map: [diagrams/system_diagram.md](diagrams/system_diagram.md)
 
+![System Data Flow](diagrams/data_flow.png)
+
+![Scoring Breakdown](diagrams/scoring_breakdown.png)
+
 ```mermaid
 flowchart TD
     A([👤 User Input\nfavorite_genre · favorite_mood\ntarget_energy · target_tempo\ntarget_danceability · target_acousticness]) --> C
