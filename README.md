@@ -25,7 +25,21 @@ The system has four main stages:
 
 An OOP wrapper (`Recommender` class) exposes the same logic for the automated test suite.
 
-See [system_diagram.md](system_diagram.md) for the full data flow and component map.
+Full component map: [diagrams/system_diagram.md](diagrams/system_diagram.md)
+
+```mermaid
+flowchart TD
+    A([👤 User Input\nfavorite_genre · favorite_mood\ntarget_energy · target_tempo\ntarget_danceability · target_acousticness]) --> C
+    B([🗄️ Song Catalog\ndata/songs.csv — 18 songs × 10 features]) --> C
+    C[📥 load_songs\nParse CSV · cast types] --> D
+    D[⚙️ score_song\nGenre +2.0 · Mood +1.0 · Energy +2.0\nTempo ×1.5 · Acousticness ×1.0 · Dance ×0.75\nMax score: 8.25] --> E
+    E[📊 recommend_songs\nSort descending · return top-K] --> F
+    F([🎵 Ranked Output\nSong · score · reason string])
+    F --> G{🧪 pytest\ntests/test_recommender.py\n7 automated tests}
+    F --> H{👁️ Human Review\nmodel_card.md\nspot-check quality}
+    G --> I([Test Report])
+    H --> J([Model Card])
+```
 
 ---
 
@@ -41,7 +55,7 @@ See [system_diagram.md](system_diagram.md) for the full data flow and component 
 
 2. Create and activate a virtual environment (recommended):
    ```bash
-   python -m venv .venv
+   python3 -m venv .venv
    source .venv/bin/activate        # Mac / Linux
    .venv\Scripts\activate           # Windows
    ```
@@ -53,13 +67,94 @@ See [system_diagram.md](system_diagram.md) for the full data flow and component 
 
 4. Run the recommender:
    ```bash
-   python -m src.main
+   python3 -m src.main
    ```
 
 5. Run the test suite:
    ```bash
    pytest
    ```
+
+---
+
+## Demo Walkthrough
+
+> Add your Loom recording link here: `https://www.loom.com/share/...`
+
+The screenshots below show the system running end-to-end with the default hip-hop/energetic profile.
+
+**Terminal output — `python3 -m src.main`:**
+
+```
+Loaded songs: 18
+
+==================================================
+  TOP RECOMMENDATIONS FOR YOU
+==================================================
+
+#1  Block Party Anthem by Concrete Waves
+    Genre: hip-hop  |  Mood: euphoric
+    Score: 7.12 / 8.25
+    Why matched:
+      - genre match (+2.0)
+      - energy match (+2.0)
+      - tempo fit (+1.43)
+      - acousticness fit (+0.98)
+      - danceability fit (+0.71)
+
+#2  Drop the Grid by Voltage CTRL
+    Genre: edm  |  Mood: energetic
+    Score: 5.63 / 8.25
+    Why matched:
+      - mood match (+1.0)
+      - energy match (+2.0)
+      - tempo fit (+0.98)
+      - acousticness fit (+0.93)
+      - danceability fit (+0.72)
+
+#3  Night Drive Loop by Neon Echo
+    Genre: synthwave  |  Mood: moody
+    Score: 4.89 / 8.25
+    Why matched:
+      - energy match (+2.0)
+      - tempo fit (+1.37)
+      - acousticness fit (+0.88)
+      - danceability fit (+0.64)
+
+#4  Sunrise City by Neon Echo
+    Genre: pop  |  Mood: happy
+    Score: 4.87 / 8.25
+    Why matched:
+      - energy match (+2.0)
+      - tempo fit (+1.27)
+      - acousticness fit (+0.92)
+      - danceability fit (+0.68)
+
+#5  Gym Hero by Max Pulse
+    Genre: pop  |  Mood: intense
+    Score: 4.78 / 8.25
+    Why matched:
+      - energy match (+2.0)
+      - tempo fit (+1.08)
+      - acousticness fit (+0.95)
+      - danceability fit (+0.75)
+
+==================================================
+```
+
+**Test suite — `pytest -v`:**
+
+```
+tests/test_recommender.py::test_recommend_returns_songs_sorted_by_score     PASSED
+tests/test_recommender.py::test_explain_recommendation_returns_non_empty_string PASSED
+tests/test_recommender.py::test_score_song_perfect_match_equals_max         PASSED
+tests/test_recommender.py::test_score_song_no_categorical_match             PASSED
+tests/test_recommender.py::test_score_song_reasons_contain_genre_match      PASSED
+tests/test_recommender.py::test_recommend_songs_returns_exactly_k           PASSED
+tests/test_recommender.py::test_score_is_within_valid_range                 PASSED
+
+7 passed in 0.03s
+```
 
 ---
 
@@ -79,28 +174,7 @@ See [system_diagram.md](system_diagram.md) for the full data flow and component 
 }
 ```
 
-**Output:**
-```
-#1  Block Party Anthem by Concrete Waves
-    Genre: hip-hop  |  Mood: euphoric
-    Score: 7.41 / 8.25
-    Why matched:
-      - genre match (+2.0)
-      - energy match (+2.0)
-      - tempo fit (+1.39)
-      - acousticness fit (+0.92)
-      - danceability fit (+0.55)
-
-#2  Drop the Grid by Voltage CTRL
-    Genre: edm  |  Mood: energetic
-    Score: 6.98 / 8.25
-    Why matched:
-      - mood match (+1.0)
-      - energy match (+2.0)
-      - tempo fit (+1.21)
-      - acousticness fit (+0.94)
-      - danceability fit (+0.53)
-```
+**Top result:** Block Party Anthem — genre match + energy match pushed it to the top with a 7.12/8.25 score. The mood didn't match exactly ("euphoric" vs "energetic") but every numerical feature aligned tightly.
 
 ---
 
@@ -118,69 +192,25 @@ See [system_diagram.md](system_diagram.md) for the full data flow and component 
 }
 ```
 
-**Output:**
-```
-#1  Midnight Coding by LoRoom
-    Genre: lofi  |  Mood: chill
-    Score: 7.89 / 8.25
-    Why matched:
-      - genre match (+2.0)
-      - mood match (+1.0)
-      - energy match (+2.0)
-      - tempo fit (+1.50)
-      - acousticness fit (+0.96)
-      - danceability fit (+0.51)
-
-#2  Library Rain by Paper Lanterns
-    Genre: lofi  |  Mood: chill
-    Score: 7.52 / 8.25
-    Why matched:
-      - genre match (+2.0)
-      - mood match (+1.0)
-      - energy match (+2.0)
-      - tempo fit (+1.30)
-      - acousticness fit (+0.89)
-      - danceability fit (+0.48)
-```
+**Top result:** Midnight Coding — perfect genre + mood + energy match. All three categorical checks fired (+5.0 points before proximity was even calculated), which pulled it well ahead of the rest of the catalog.
 
 ---
 
-### Example 3 — Rock / Intense Listener
+### Example 3 — Profile with No Matching Genre (Rap listener)
 
 **Input:**
 ```python
 {
-    "favorite_genre":      "rock",
-    "favorite_mood":       "intense",
+    "favorite_genre":      "rap",
+    "favorite_mood":       "hype",
     "target_energy":       0.90,
-    "target_tempo":        150,
-    "target_danceability": 0.65,
-    "target_acousticness": 0.10
+    "target_tempo":        140,
+    "target_danceability": 0.85,
+    "target_acousticness": 0.05
 }
 ```
 
-**Output:**
-```
-#1  Storm Runner by Voltline
-    Genre: rock  |  Mood: intense
-    Score: 8.10 / 8.25
-    Why matched:
-      - genre match (+2.0)
-      - mood match (+1.0)
-      - energy match (+2.0)
-      - tempo fit (+1.48)
-      - acousticness fit (+0.99)
-      - danceability fit (+0.51)
-
-#2  Shattered Signal by Iron Veil
-    Genre: metal  |  Mood: angry
-    Score: 6.44 / 8.25
-    Why matched:
-      - energy match (+2.0)
-      - tempo fit (+1.43)
-      - acousticness fit (+0.96)
-      - danceability fit (+0.42)
-```
+**Result:** No genre match fires because "rap" is not in the catalog. The system falls back entirely on numerical proximity and returns EDM and hip-hop songs — songs that feel energetically similar but aren't what the user asked for. This demonstrates the catalog gap identified in the model card.
 
 ---
 
@@ -203,29 +233,62 @@ Songs are loaded from a CSV at runtime. Adding or removing songs requires editin
 
 ---
 
-## Testing Summary
+## Reliability and Evaluation
 
-**What worked:**
-- The ranking logic correctly surfaces the genre+mood match at the top when all features align.
-- The proximity functions scale cleanly — a perfect tempo match contributes the full 1.5 points, and the contribution degrades smoothly as BPM diverges.
-- The test suite (`pytest`) caught an early bug where the OOP `Recommender.recommend()` was returning unsorted songs.
+### Automated Tests
 
-**What didn't work at first:**
-- Acousticness proximity unexpectedly dominated rankings for some profiles. A song could match on genre and mood but rank lower than expected because its acousticness score was far off. This revealed that numerical proximity scores can quietly override categorical matches when the gap is large.
-- The catalog has no rap/trap or R&B-dominant profiles, so users with those preferences get poor genre matches and the system falls back entirely on numerical proximity — which feels wrong.
+7 tests written in `tests/test_recommender.py`, all passing:
 
-**What I learned:**
-Feature weights are design decisions, not math. Every weight encodes an assumption about what matters. Changing genre from +2.0 to +0.5 completely scrambled the results, which made it clear that the "algorithm" is really just a formalized version of someone's opinion about music.
+| Test | What it checks |
+|---|---|
+| `test_recommend_returns_songs_sorted_by_score` | OOP Recommender ranks the best genre+mood match first |
+| `test_explain_recommendation_returns_non_empty_string` | Explanation output is a non-empty string |
+| `test_score_song_perfect_match_equals_max` | A song matching every feature exactly scores exactly 8.25 |
+| `test_score_song_no_categorical_match` | Wrong genre+mood drops score by at least 3.0 points |
+| `test_score_song_reasons_contain_genre_match` | Genre match always appears in the reasons list |
+| `test_recommend_songs_returns_exactly_k` | Ranker returns exactly K results regardless of catalog size |
+| `test_score_is_within_valid_range` | Score is always between 0.0 and 8.25, even for worst-case inputs |
+
+**Result: 7 / 7 tests passed** (`pytest` in 0.03s)
+
+### Confidence Scoring
+
+The score out of 8.25 acts as a built-in confidence measure. A score above 6.0 means at least genre, mood, and energy all matched — high confidence the song fits. A score below 4.0 means none of the categorical checks fired and the system is relying only on numerical proximity — low confidence, and the user should be skeptical of those results.
+
+### What surprised me during testing
+
+A perfect-match song reliably hit 8.25 (confirmed by `test_score_song_perfect_match_equals_max`). But a rap/hype profile with no matching genre in the catalog still returned results without any warning — the system silently fell back to proximity-only scoring with no way for the user to know the recommendations were low-confidence. A production system would surface a warning in those cases.
 
 ---
 
-## Reflection
+## Reflection and Ethics
 
-Building this project changed how I think about every recommendation I see. Spotify's "Discover Weekly," YouTube's autoplay, and Netflix's "Because you watched..." are all doing some version of this — comparing your profile against a catalog and returning the highest-scoring matches. The difference is scale (millions of songs vs. 18) and the fact that they use embeddings and user behavior data instead of hand-written rules.
+### Limitations and Biases
 
-The most surprising thing was how much human judgment is baked into a system that looks objective. Every weight, every feature choice, every threshold is a decision someone made. If the catalog doesn't include rap, rap listeners get bad recommendations — not because the algorithm is broken, but because the data doesn't represent them. That's a form of bias that has nothing to do with the math.
+- **Catalog bias:** The dataset has no rap, trap, or R&B as primary genres. Users with those preferences will always receive low-confidence results regardless of how accurate their profile is.
+- **Static taste model:** The system assumes a single fixed preference. Real users have moods, contexts, and taste shifts that a single profile cannot capture.
+- **Acousticness instability:** Acousticness scores can quietly override genre+mood matches if the gap is large. This is a weighting bug disguised as a feature — it can produce results that feel wrong even when the categorical signals are strong.
+- **No popularity or novelty signals:** The system treats all songs equally. It has no way to surface a song the user hasn't heard yet or avoid recommending the same track repeatedly.
 
-This project made it concrete: AI systems don't discover preferences, they reflect the assumptions of whoever built and curated them. Understanding that is the first step to building fairer systems.
+### Could this AI be misused?
+
+A music recommender seems low-stakes, but the same pattern — user profile + catalog scoring — powers hiring tools, loan systems, and content feeds. In those contexts, biased catalogs and fixed profiles cause real harm. The lesson from this project is that what looks like neutral math (a score) always reflects human decisions about what features matter and whose data is included. Mitigation: document who the catalog represents, test explicitly against underrepresented profiles, and surface low-confidence scores to users rather than hiding them.
+
+### AI Collaboration
+
+I used Claude Code (Claude Sonnet 4.6) throughout this project as a development partner.
+
+**One helpful suggestion:** When I asked whether `@dataclass` could be replaced with Pydantic's `BaseModel`, Claude explained that `BaseModel` adds automatic type coercion — meaning string values from the CSV (like `"0.8"`) would be cast to `float` automatically at construction time, removing the need for the manual casting in `load_songs()`. That was a genuine improvement I hadn't thought of, and I added it to the Future Work section of the model card.
+
+**One flawed suggestion:** In an earlier draft of the README, Claude generated estimated sample output scores (e.g., `7.41 / 8.25` for Block Party Anthem) before the code was actually run. When I ran `python3 -m src.main`, the real score was `7.12 / 8.25` — different enough to be wrong. The AI was reasoning about what the score *should* be based on the algorithm description rather than running the code and checking. I replaced the estimated outputs with the actual terminal output.
+
+---
+
+## Testing Summary
+
+**7 out of 7 tests passed.** The scoring logic is mathematically correct — a verified perfect match hits exactly 8.25, and scores are bounded between 0 and 8.25 for all inputs. The ranker correctly orders by score descending.
+
+The system struggled when no categorical features matched (rap/hype profile). It returned results silently with no warning that confidence was low — all proximity-based with no genre or mood points. This is the most important known gap for a future version to address.
 
 ---
 
@@ -233,13 +296,16 @@ This project made it concrete: AI systems don't discover preferences, they refle
 
 ```
 ├── src/
-│   ├── recommender.py     # Core logic: Song, UserProfile, Recommender, score_song, recommend_songs
-│   └── main.py            # CLI runner with sample user profile
+│   ├── recommender.py          # Core logic: Song, UserProfile, Recommender, score_song, recommend_songs
+│   └── main.py                 # CLI runner with sample user profile
 ├── data/
-│   └── songs.csv          # 18-song catalog with 10 features per song
+│   └── songs.csv               # 18-song catalog with 10 features per song
 ├── tests/
-│   └── test_recommender.py
-├── model_card.md          # Bias, evaluation, and limitations documentation
-├── system_diagram.md      # Data flow and component diagram
+│   └── test_recommender.py     # 7 automated unit tests
+├── diagrams/
+│   └── system_diagram.md       # Full data flow and component map
+├── model_card.md               # Bias, evaluation, and limitations documentation
 └── requirements.txt
 ```
+
+[Model Card](model_card.md) | [System Diagram](diagrams/system_diagram.md)
