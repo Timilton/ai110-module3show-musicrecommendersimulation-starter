@@ -85,6 +85,8 @@ flowchart TD
 
 > Add your Loom recording link here: `https://www.loom.com/share/...`
 
+**Loom recording:** https://www.loom.com/share/752fc5f9507d445a83f6c32da72687de
+
 The screenshots below show the system running end-to-end with the default hip-hop/energetic profile.
 
 **Terminal output — `python3 -m src.main`:**
