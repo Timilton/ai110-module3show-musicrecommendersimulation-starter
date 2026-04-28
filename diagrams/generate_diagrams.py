@@ -7,7 +7,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import os
 
-OUT = os.path.dirname(__file__)
+OUT = os.path.join(os.path.dirname(__file__), "..", "assets")
 
 
 # ── colour palette ────────────────────────────────────────────────────────────
