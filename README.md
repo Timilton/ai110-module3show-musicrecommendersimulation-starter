@@ -313,3 +313,5 @@ The system struggled when no categorical features matched (rap/hype profile). It
 ```
 
 [Model Card](model_card.md) | [System Diagram](diagrams/system_diagram.md)
+
+this is the loom link for my project: https://www.loom.com/share/752fc5f9507d445a83f6c32da72687de
